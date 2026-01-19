@@ -78,6 +78,7 @@ const StoresManagement = () => {
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [filterLocation, setFilterLocation] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [searchText, setSearchText] = useState('');
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
@@ -369,7 +370,14 @@ const StoresManagement = () => {
   const filteredStores = stores.filter(store => {
     const locationMatch = !filterLocation || store.location === filterLocation;
     const statusMatch = !filterStatus || store.status === filterStatus;
-    return locationMatch && statusMatch;
+    
+    const searchLower = searchText.toLowerCase();
+    const searchMatch = !searchText || 
+      (store.storeName && String(store.storeName).toLowerCase().includes(searchLower)) ||
+      (store.employeeName && String(store.employeeName).toLowerCase().includes(searchLower)) ||
+      (store.managerName && String(store.managerName).toLowerCase().includes(searchLower));
+    
+    return locationMatch && statusMatch && searchMatch;
   });
 
   return (
@@ -564,8 +572,19 @@ const StoresManagement = () => {
 
       {/* Filters Section */}
       <div className="filters-container">
-        <h2>الفلاتر</h2>
+        <h2>البحث والفلاتر</h2>
         <div className="filters">
+          <div className="filter-group search-group">
+            <label>بحث (اسم المحل، الموظف، أو المدير):</label>
+            <input
+              type="text"
+              className="search-input"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="ابحث هنا..."
+            />
+          </div>
+
           <div className="filter-group">
             <label>فلتر حسب المنطقة:</label>
             <select 
@@ -597,9 +616,10 @@ const StoresManagement = () => {
             onClick={() => {
               setFilterLocation('');
               setFilterStatus('');
+              setSearchText('');
             }}
           >
-            إعادة تعيين الفلاتر
+            إعادة تعيين الكل
           </button>
         </div>
       </div>

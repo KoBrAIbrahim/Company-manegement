@@ -278,6 +278,11 @@
   flex-direction: column;
 }
 
+.filter-group.search-group {
+  flex: 2;
+  min-width: 300px;
+}
+
 .filter-group label {
   margin-bottom: 8px;
   font-weight: 700;
@@ -298,6 +303,27 @@
   outline: none;
   border-color: #dc143c;
   box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+}
+
+.search-input {
+  padding: 13px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+  color: #000000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #dc143c;
+  box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+}
+
+.search-input::placeholder {
+  color: #999;
 }
 
 .btn-reset-filters {
