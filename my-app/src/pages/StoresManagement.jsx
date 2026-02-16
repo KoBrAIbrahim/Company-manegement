@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
 import { 
   collection, 
@@ -78,6 +78,18 @@ const StoresManagement = () => {
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [filterLocation, setFilterLocation] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [filterDate, setFilterDate] = useState('');
+  const dateInputRef = useRef(null);
+
+  const openDatePicker = () => {
+    if (!dateInputRef.current) return;
+    // Prefer showPicker when available (Chromium), else focus the input
+    if (typeof dateInputRef.current.showPicker === 'function') {
+      // eslint-disable-next-line no-unused-vars
+      try { dateInputRef.current.showPicker(); return; } catch (e) { /* fallback */ }
+    }
+    dateInputRef.current.focus();
+  };
   const [searchText, setSearchText] = useState('');
   const [editingId, setEditingId] = useState(null);
 
@@ -370,14 +382,23 @@ const StoresManagement = () => {
   const filteredStores = stores.filter(store => {
     const locationMatch = !filterLocation || store.location === filterLocation;
     const statusMatch = !filterStatus || store.status === filterStatus;
-    
+    // فلتر ليوم واحد (مطابقة تاريخ المخزن مع التاريخ المحدد)
+    const dateMatch = !filterDate || (store.date && String(store.date) === String(filterDate));
+
     const searchLower = searchText.toLowerCase();
     const searchMatch = !searchText || 
       (store.storeName && String(store.storeName).toLowerCase().includes(searchLower)) ||
       (store.employeeName && String(store.employeeName).toLowerCase().includes(searchLower)) ||
-      (store.managerName && String(store.managerName).toLowerCase().includes(searchLower));
+      (store.managerName && String(store.managerName).toLowerCase().includes(searchLower)) ||
+      (store.statusNote && String(store.statusNote).toLowerCase().includes(searchLower));
+      
+    // البحث حسب أرقام الهواتف (يسمح بالبحث الجزئي)
+    const phoneMatch = !searchText || 
+      (store.storePhone && String(store.storePhone).toLowerCase().includes(searchLower)) ||
+      (store.managerPhone && String(store.managerPhone).toLowerCase().includes(searchLower));
     
-    return locationMatch && statusMatch && searchMatch;
+    // ابحث في الحقول النصية أو في أرقام الهواتف
+    return locationMatch && statusMatch && (searchMatch || phoneMatch) && dateMatch;
   });
 
   return (
@@ -611,12 +632,36 @@ const StoresManagement = () => {
             </select>
           </div>
 
-          <button 
+          <div className="filter-group date-filter-group">
+            <label>فلتر حسب التاريخ (يوم واحد):</label>
+            <div className="date-wrapper">
+              <input
+                type="date"
+                className="date-input"
+                ref={dateInputRef}
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                placeholder="اختر التاريخ"
+              />
+              <button
+                type="button"
+                className="btn-calendar"
+                onClick={openDatePicker}
+                aria-label="افتح اختيار التاريخ"
+              >
+                📅
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="button"
             className="btn-reset-filters"
             onClick={() => {
               setFilterLocation('');
               setFilterStatus('');
               setSearchText('');
+              setFilterDate('');
             }}
           >
             إعادة تعيين الكل
